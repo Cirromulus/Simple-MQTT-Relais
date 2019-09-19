@@ -9,3 +9,4 @@ As you can see, I had to solder some lines to enable proper boot of the ESP-01. 
 
 ## Software
 Arduino standard Library PubSubClient, probably something similar to [this](https://github.com/knolleary/pubsubclient) one.
+Also, use PlatformIO instead of this cancer-ide that comes with arduino.
