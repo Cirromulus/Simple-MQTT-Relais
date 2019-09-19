@@ -37,14 +37,11 @@ const char* mqtt_server = "192.168.0.8";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-long lastMsg = 0;
 char msg[50];
-int value = 0;
 
-bool state = false;
+static bool state;
 
 void setup_wifi() {
-
   delay(10);
   // We start by connecting to a WiFi network
   Serial.println();
@@ -54,28 +51,13 @@ void setup_wifi() {
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+    delay(100);
+    //Serial.print(".");
   }
-
   randomSeed(micros());
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
-
-
   if(strcmp(topic, "espRelais/switch") == 0)
   {
       // Switch on the LED if an 1 was received as first character
@@ -95,35 +77,22 @@ void reconnect() {
     clientId += String(random(0xffff), HEX);
     // Attempt to connect
     if (client.connect(clientId.c_str())) {
-      Serial.println("connected");
-
-      snprintf (msg, 50, "%d", state);
-      client.publish("espRelais/status/switch", msg);
-      // ... and resubscribe
       client.subscribe("espRelais/switch");
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 1 seconds");
-      // Wait 1 seconds before retrying
-      delay(1000);
     }
   }
 }
 
 void setup() {
-  pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
-  pinMode(RELAIS, OUTPUT);
-  digitalWrite(RELAIS, LOW);
-  Serial.begin(115200);
-  setup_wifi();
-  client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);
-
+    state = true;
+    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(RELAIS, OUTPUT);
+    digitalWrite(RELAIS, state);
+    setup_wifi();
+    client.setServer(mqtt_server, 1883);
+    client.setCallback(callback);
 }
 
 void loop() {
-
   if (!client.connected()) {
     reconnect();
   }
