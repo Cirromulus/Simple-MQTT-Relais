@@ -42,19 +42,25 @@ char msg[50];
 static bool state;
 
 void setup_wifi() {
-  delay(10);
-  // We start by connecting to a WiFi network
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
+    bool info = true;
+    digitalWrite(LED_BUILTIN, info);
+    delay(10);
+    info = !info;
+    // We start by connecting to a WiFi network
+    Serial.println();
+    Serial.print("Connecting to ");
+    Serial.println(ssid);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(100);
-    //Serial.print(".");
-  }
-  randomSeed(micros());
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(100);
+        //Serial.print(".");
+        digitalWrite(LED_BUILTIN, info);
+        info = !info;
+    }
+    randomSeed(micros());
+    digitalWrite(LED_BUILTIN, false);
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -70,25 +76,31 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void reconnect() {
   // Loop until we're reconnected
+  bool info = true;
   while (!client.connected()) {
     // Create a random client ID
     String clientId = "ESP8266Client-";
     clientId += String(random(0xffff), HEX);
     // Attempt to connect
-    if (client.connect(clientId.c_str())) {
-      client.subscribe("espRelais/switch");
-    }
+    client.connect(clientId.c_str());
+    digitalWrite(LED_BUILTIN, info);
+    info = !info;
   }
+  client.subscribe("espRelais/switch");
+  digitalWrite(LED_BUILTIN, false);
 }
 
 void setup() {
-    state = true;
+    state = false;
     pinMode(LED_BUILTIN, OUTPUT);
     pinMode(RELAIS, OUTPUT);
     digitalWrite(RELAIS, state);
     setup_wifi();
     client.setServer(mqtt_server, 1883);
     client.setCallback(callback);
+    reconnect();
+    snprintf (msg, 50, "%d", state);
+    client.publish("espRelais/status/switch", msg);
 }
 
 void loop() {
