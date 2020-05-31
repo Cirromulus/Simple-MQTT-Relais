@@ -64,13 +64,13 @@ void setup_wifi() {
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  if(strcmp(topic, "espRelais/switch") == 0)
+  if(strcmp(topic, "espRelais/switch") == 0 && length == 1)
   {
       // Switch on the LED if an 1 was received as first character
       state = (char)payload[0] == '1';
       digitalWrite(RELAIS, state);
       snprintf (msg, 50, "%d", state);
-      client.publish("espRelais/status/switch", msg);
+      client.publish("espRelais/status/switch", msg, true);
   }
 }
 
