@@ -27,13 +27,9 @@
 
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <config.h>
 
 #define RELAIS 0
-// Update these with values suitable for your network.
-
-const char* ssid = "BehindertesWLANFuerDenDrucker";
-const char* password = "0~0~0}{0~";
-const char* mqtt_server = "192.168.0.8";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -69,8 +65,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
       // Switch on the LED if an 1 was received as first character
       state = (char)payload[0] == '1';
       digitalWrite(RELAIS, state);
-      snprintf (msg, 50, "%d", state);
-      client.publish("espRelais/status/switch", msg, true);
+      snprintf (msg, 50, "%d", !state);
+      client.publish("espRelais/switch", msg, true);
   }
 }
 
@@ -100,7 +96,7 @@ void setup() {
     client.setCallback(callback);
     reconnect();
     snprintf (msg, 50, "%d", state);
-    client.publish("espRelais/status/switch", msg);
+    client.publish("espRelais/switch", msg);
 }
 
 void loop() {
