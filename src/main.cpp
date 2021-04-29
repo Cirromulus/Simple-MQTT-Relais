@@ -63,13 +63,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
   if(strcmp(topic, "espRelais/switch") == 0 && length == 1)
   {
       // Switch on the LED if an 1 was received as first character
-      bool new_state = (char)payload[0] == '1';
-      if(new_state != state) {
-          state = new_state;
-          digitalWrite(RELAIS, state);
-          snprintf (msg, 50, "%d", state);
-          client.publish("espRelais/switch", msg, true);
-      }
+      bool state = (char)payload[0] == '1';
+      digitalWrite(RELAIS, state);
   }
 }
 
